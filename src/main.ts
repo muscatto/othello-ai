@@ -111,11 +111,11 @@ function update() {
 
   // コンピュータを呼び出す
   if (!myTurn) {
-    showStatus("計算中...");
+    setStatus("計算中...");
     setTimeout(() => {
       think();
-      showStatus("");
-    }, 2000);
+      setStatus("");
+    }, 1000);
   }
 }
 
@@ -126,7 +126,7 @@ function showMessage(str: string) {
   }, 1000);
 }
 
-function showStatus(str: string) {
+function setStatus(str: string) {
   status.textContent = str;
   cover.style.display = str === "" ? "none" : "flex";
 }
@@ -206,8 +206,6 @@ function think() {
     }
   }
 
-  console.log(px, py);
-
   // 白が置ける場所があった場合
   if (px >= 0 && py >= 0) {
     const flipped = getFlipCells(data, px, py, WHITE);
@@ -217,6 +215,8 @@ function think() {
         put(flipped[k][0], flipped[k][1], WHITE);
       }
     }
+  } else {
+    throw new Error("コンピュータにエラーが発生しました");
   }
 
   update();
@@ -247,7 +247,7 @@ function minimax(
   board: number[][],
   depth: number,
   isAI: boolean, // AIの番かどうか
-  color: number,
+  color: number, // AIの石の色
   alpha: number,
   beta: number
 ) {
@@ -256,6 +256,13 @@ function minimax(
   }
   const opponent = color === WHITE ? BLACK : WHITE;
   const validMoves = getValidMoves(board, isAI ? color : opponent);
+
+  // 有効な手がない場合の処理を追加
+  // isGameover()でハンドリング可能
+  if (validMoves.length === 0) {
+    console.log("有効な手がない");
+    return calcWeightData(board, color);
+  }
 
   if (isAI) {
     let maxEval = -Infinity;
@@ -272,7 +279,7 @@ function minimax(
     for (const move of validMoves) {
       const newBoard = makeMove(board, move, opponent);
       const evalScore = minimax(newBoard, depth - 1, true, color, alpha, beta);
-      minEval = Math.min(beta, evalScore);
+      minEval = Math.min(minEval, evalScore);
       beta = Math.min(beta, evalScore);
       if (beta <= alpha) break;
     }
