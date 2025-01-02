@@ -1,0 +1,220 @@
+html,
+body {
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  background-color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+h2 {
+  color: #1f2937;
+  margin: 16px 0;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+#numBlack,
+#numWhite {
+  display: inline-block;
+  min-width: 24px;
+  padding: 2px 8px;
+  margin: 0 4px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#message {
+  color: #dc2626;
+  text-align: center;
+  font-weight: 600;
+  min-height: 3rem;
+  width: 522px;
+}
+
+#status {
+  z-index: 50;
+  color: black;
+  font-weight: 600;
+}
+
+#cover {
+  position: absolute;
+  inset: 0px;
+  z-index: 50;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+#board {
+  background-color: #737373;
+  border-radius: 8px;
+  padding: 12px;
+  border-collapse: separate;
+  border-spacing: 2px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+td.cell {
+  background-color: #22c55e;
+  border-radius: 4px;
+  width: 60px;
+  height: 60px;
+  margin: 2px;
+  padding: 0;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+  perspective: 1000px;
+}
+
+td.cell::before {
+  content: "●";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0) rotateY(180deg);
+  font-size: 48px; /* 石のサイズを大きく */
+  opacity: 0;
+  transition: all 0.4s ease-out;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+td.cell:hover {
+  background-color: #16a34a;
+}
+
+/* 石の表示アニメーション */
+td.black::before {
+  color: #1f2937;
+  transform: translate(-50%, -50%) scale(1) rotateY(0);
+  opacity: 1;
+}
+
+td.white::before {
+  color: #f9fafb;
+  transform: translate(-50%, -50%) scale(1) rotateY(0);
+  opacity: 1;
+}
+
+/* 石を裏返すアニメーション */
+td.flip-to-black::before {
+  animation: flipToBlack 0.5s ease-out forwards;
+}
+
+td.flip-to-white::before {
+  animation: flipToWhite 0.5s ease-out forwards;
+}
+
+/* 勝利時のアニメーション */
+td.winner-black::before,
+td.winner-white::before {
+  animation: winnerPulse 1s ease-in-out infinite;
+}
+
+@keyframes flipToBlack {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+    color: #f9fafb;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1) rotateY(90deg);
+  }
+  51% {
+    color: #1f2937;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotateY(180deg);
+    color: #1f2937;
+  }
+}
+
+@keyframes flipToWhite {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+    color: #1f2937;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1) rotateY(90deg);
+  }
+  51% {
+    color: #f9fafb;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotateY(180deg);
+    color: #f9fafb;
+  }
+}
+
+@keyframes winnerPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  body {
+    padding: 12px;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  td.cell {
+    width: 48px;
+    height: 48px;
+  }
+
+  td.cell::before {
+    font-size: 36px;
+  }
+
+  #board {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 450px) {
+  body {
+    padding: 8px;
+  }
+
+  h2 {
+    font-size: 1rem;
+  }
+
+  td.cell {
+    width: 40px;
+    height: 40px;
+  }
+
+  td.cell::before {
+    font-size: 28px;
+  }
+
+  #board {
+    padding: 6px;
+  }
+}
