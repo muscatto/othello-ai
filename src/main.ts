@@ -24,7 +24,6 @@ const dirs = [
 const BLACK = 1;
 const WHITE = 2;
 const EMPTY = 0;
-// const FLIP_TIME = 200;
 const data: number[][] = [];
 let myTurn = false;
 let isAnimated = false; // アニメーション中かどうか
@@ -68,6 +67,27 @@ function getElement(id: string): HTMLElement {
   }
 }
 
+/* function printBoard(board: number[][]) {
+  board.forEach((d) => {
+    let row = "";
+    for (const letter of d) {
+      switch (letter) {
+        case BLACK:
+          row += " ● ";
+          break;
+        case WHITE:
+          row += " ○ ";
+          break;
+        default:
+          row += " * ";
+          break;
+      }
+    }
+    console.log(row);
+  });
+  console.log("--------------------------");
+} */
+
 function update() {
   let numWhite = 0;
   let numBlack = 0;
@@ -99,12 +119,10 @@ function update() {
   }
 
   // ターン変更
-  if (!blackFlip) {
+  if (!myTurn && !blackFlip) {
     showMessage("黒スキップ");
-    myTurn = false;
-  } else if (!whiteFlip) {
+  } else if (myTurn && !whiteFlip) {
     showMessage("白スキップ");
-    myTurn = true;
   } else {
     myTurn = !myTurn;
   }
@@ -162,7 +180,8 @@ function put(i: number, j: number, color: number) {
   // すでにある石を裏返す場合
   switch (color) {
     case WHITE:
-      if (c.className !== "cell black") break;
+      if (c.className !== "cell black")
+        throw new Error("cellのclassNameが正しくありません");
       c.classList.remove("black");
       c.classList.add("flip-to-white");
       isAnimated = true;
@@ -173,7 +192,8 @@ function put(i: number, j: number, color: number) {
       }, 600);
       break;
     case BLACK:
-      if (c.className !== "cell white") break;
+      if (c.className !== "cell white")
+        throw new Error("cellのclassNameが正しくありません");
       c.classList.remove("white");
       c.classList.add("flip-to-black");
       isAnimated = true;
@@ -216,7 +236,7 @@ function think() {
       }
     }
   } else {
-    throw new Error("コンピュータにエラーが発生しました");
+    throw new Error("エラー: 白を置ける場所がありません");
   }
 
   update();
@@ -251,17 +271,19 @@ function minimax(
   alpha: number,
   beta: number
 ) {
-  if (depth === 0 || isGameOver(board)) {
+  if (depth === 0) {
     return calcWeightData(board, color);
   }
   const opponent = color === WHITE ? BLACK : WHITE;
   const validMoves = getValidMoves(board, isAI ? color : opponent);
 
-  // 有効な手がない場合の処理を追加
-  // isGameover()でハンドリング可能
   if (validMoves.length === 0) {
-    console.log("有効な手がない");
-    return calcWeightData(board, color);
+    if (getValidMoves(board, isAI ? opponent : color).length === 0) {
+      // ゲーム終了
+      return calcWeightData(board, color);
+    }
+    // AIもしくは相手がパス
+    return minimax(board, depth - 1, !isAI, color, alpha, beta);
   }
 
   if (isAI) {
@@ -292,13 +314,44 @@ function getValidMoves(board: number[][], color: number) {
   const validMoves = [];
   for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
-      const flipped = getFlipCells(board, x, y, color);
-      if (flipped.length > 0) {
-        validMoves.push([x, y]);
+      for (const dir of dirs) {
+        if (board[x][y] !== EMPTY) break;
+        if (canFlipCellsOneDir(board, x, y, dir[0], dir[1], color)) {
+          validMoves.push([x, y]);
+          break;
+        }
       }
     }
   }
   return validMoves;
+}
+
+// ある方向で石を挟めるか否かを判定する関数
+function canFlipCellsOneDir(
+  board: number[][],
+  i: number,
+  j: number,
+  dirX: number,
+  dirY: number,
+  color: number
+) {
+  let x = i + dirX;
+  let y = j + dirY;
+
+  if (!isInBoard(x, y) || board[x][y] === color || board[x][y] === EMPTY) {
+    return false;
+  }
+
+  while (true) {
+    x += dirX;
+    y += dirY;
+    if (!isInBoard(x, y) || board[x][y] === EMPTY) {
+      return false;
+    }
+    if (board[x][y] === color) {
+      return true;
+    }
+  }
 }
 
 function makeMove(board: number[][], move: number[], color: number) {
@@ -316,32 +369,11 @@ function makeMove(board: number[][], move: number[], color: number) {
   return newBoard;
 }
 
-function isGameOver(board: number[][]) {
-  let numWhite = 0;
-  let numBlack = 0;
-  // 盤面のカウント
-  for (let x = 0; x < 8; x++) {
-    for (let y = 0; y < 8; y++) {
-      if (board[y][x] === WHITE) numWhite++;
-      if (board[y][x] === BLACK) numBlack++;
-    }
-  }
-  const whiteFlip = canFlip(board, WHITE);
-  const blackFlip = canFlip(board, BLACK);
-  // 勝敗判定
-  if (numWhite + numBlack === 64 || (!blackFlip && !whiteFlip)) {
-    return true;
-  }
-  return false;
-}
-
 function canFlip(board: number[][], color: number) {
   for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
       const flipped = getFlipCells(board, x, y, color);
-      if (flipped.length > 0) {
-        return true;
-      }
+      if (flipped.length > 0) return true;
     }
   }
   return false;
