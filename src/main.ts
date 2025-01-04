@@ -26,6 +26,7 @@ const WHITE = 2;
 const EMPTY = 0;
 const data: number[][] = [];
 let myTurn = false;
+let cellsSum = 64;
 let isAnimated = false; // アニメーション中かどうか
 
 const message = getElement("message");
@@ -100,6 +101,7 @@ function update() {
   }
   numWhiteElem.textContent = String(numWhite);
   numBlackElem.textContent = String(numBlack);
+  cellsSum = numBlack + numWhite;
 
   const whiteFlip = canFlip(data, WHITE);
   const blackFlip = canFlip(data, BLACK);
@@ -189,7 +191,7 @@ function put(i: number, j: number, color: number) {
         c.classList.remove("flip-to-white");
         c.classList.add("white");
         isAnimated = false;
-      }, 600);
+      }, 300);
       break;
     case BLACK:
       if (c.className !== "cell white")
@@ -201,7 +203,7 @@ function put(i: number, j: number, color: number) {
         isAnimated = false;
         c.classList.remove("flip-to-black");
         c.classList.add("black");
-      }, 600);
+      }, 300);
       break;
     default:
       throw new Error("cellのclassNameが正しくありません");
@@ -215,9 +217,17 @@ function think() {
     py = -1;
 
   const validMoves = getValidMoves(data, WHITE);
+  const depth = 64 - cellsSum < 10 ? Infinity : 6;
   for (const move of validMoves) {
     const newBoard = makeMove(data, move, WHITE);
-    const moveValue = minimax(newBoard, 6, false, WHITE, -Infinity, Infinity);
+    const moveValue = minimax(
+      newBoard,
+      depth,
+      false,
+      WHITE,
+      -Infinity,
+      Infinity
+    );
 
     if (moveValue > highScore) {
       highScore = moveValue;
