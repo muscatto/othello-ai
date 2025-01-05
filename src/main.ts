@@ -30,7 +30,7 @@ let cellsSum = 64;
 let isAnimated = false; // アニメーション中かどうか
 
 const message = getElement("message");
-const cover = getElement("cover");
+const statusModal = getElement("status-modal");
 const status = getElement("status");
 const b = getElement("board");
 const numWhiteElem = getElement("numWhite");
@@ -148,7 +148,7 @@ function showMessage(str: string) {
 
 function setStatus(str: string) {
   status.textContent = str;
-  cover.style.display = str === "" ? "none" : "flex";
+  statusModal.style.display = str === "" ? "none" : "flex";
 }
 
 function clicked(e: MouseEvent) {

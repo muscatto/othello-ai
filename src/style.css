@@ -42,8 +42,8 @@ h2 {
   font-weight: 600;
 }
 
-#cover {
-  position: absolute;
+.modal {
+  position: fixed;
   inset: 0px;
   z-index: 50;
   background-color: rgba(255, 255, 255, 0.5);
